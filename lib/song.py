@@ -3,6 +3,7 @@ import sqlite3
 CONN = sqlite3.connect('music.db')
 CURSOR = CONN.cursor()
 
+
 class Song:
 
     all = []
@@ -40,7 +41,8 @@ class Song:
 
         CURSOR.execute(sql, (self.name, self.album))
 
-        self.id = CURSOR.execute("SELECT last_insert_rowid() FROM songs").fetchone()[0]
+        self.id = CURSOR.execute(
+            "SELECT last_insert_rowid() FROM songs").fetchone()[0]
 
     @classmethod
     def create(cls, name, album):
@@ -49,3 +51,36 @@ class Song:
         return song
 
     # new code goes here!
+    @classmethod
+    def new_from_db(cls, row):
+        # access class constructor through cls/create new python object
+        song = cls(row[1], row[2])
+        song.id = row[0]
+        
+    @classmethod
+    def get_all(cls):
+        sql = """
+            SELECT *
+            FROM songs
+        """
+        # fetch all rows from last executed statement
+        all = CURSOR.execute(sql).fetchall()
+
+        # update all with new python objects
+        cls.all = [cls.new_from_db(row) for row in all]
+        
+    @classmethod
+    def find_by_name(cls, name):
+        # use ? placeholder to prevent sql injections
+        sql = """
+            SELECT *
+            FROM songs
+            WHERE name = ?
+            LIMIT 1
+        """
+
+        song = CURSOR.execute(sql, (name,)).fetchone()
+
+        return cls.new_from_db(song)
+        
+    
