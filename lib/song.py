@@ -5,7 +5,7 @@ CURSOR = CONN.cursor()
 
 
 class Song:
-
+    # keep track of objects/list of objects
     all = []
 
     def __init__(self, name, album):
@@ -41,9 +41,13 @@ class Song:
 
         CURSOR.execute(sql, (self.name, self.album))
 
+        # always update id after inserting
         self.id = CURSOR.execute(
             "SELECT last_insert_rowid() FROM songs").fetchone()[0]
+        # OR
+        # self.id = CURSOR.lastrowid
 
+    # DRY/prevent creating instance/object every time
     @classmethod
     def create(cls, name, album):
         song = Song(name, album)
@@ -66,7 +70,7 @@ class Song:
         # fetch all rows from last executed statement
         all = CURSOR.execute(sql).fetchall()
 
-        # update all with new python objects
+        # update all with new python objects/list(array) of objects
         cls.all = [cls.new_from_db(row) for row in all]
         
     @classmethod
@@ -81,6 +85,7 @@ class Song:
 
         song = CURSOR.execute(sql, (name,)).fetchone()
 
+        # return python object
         return cls.new_from_db(song)
         
     
